@@ -17,10 +17,10 @@ type createReq struct {
 type RepoManager interface {
 	// SetName sets the name of the repo
 	SetName(name string)
-	// CreateRepo creates a new repository given ar.name and description.
+	// CreateRepo creates a new repository given a description.
 	CreateRepo(desc string) error
-	// PushChanges pushes changes to the repository.
-	PushChanges(commit string) error
+	// PushChanges pushes changes to the repository given a commit message.
+	PushChanges(message string) error
 }
 
 type repoManager struct {
@@ -67,7 +67,7 @@ func (r *repoManager) CreateRepo(desc string) error {
 	return r.initializeRepo(desc)
 }
 
-func (r *repoManager) PushChanges(commit string) error {
+func (r *repoManager) PushChanges(message string) error {
 	fmt.Println("Agregando cambios...")
 	err := r.execRepoGitCommand("add", ".")
 	if err != nil {
@@ -75,7 +75,7 @@ func (r *repoManager) PushChanges(commit string) error {
 	}
 
 	fmt.Println("Haciendo commits de cambios...")
-	err = r.execRepoGitCommand("commit", "-m", commit)
+	err = r.execRepoGitCommand("commit", "-m", message)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("ocurrió un error al hacer commit de los cambios: %s", err))
 	}
