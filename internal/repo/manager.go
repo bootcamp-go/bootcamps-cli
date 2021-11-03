@@ -1,11 +1,11 @@
 package repo
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
-	"net/http"
 	"os/exec"
+
+	"github.com/ezedh/bootcamps/pkg/http"
 )
 
 type createReq struct {
@@ -15,27 +15,38 @@ type createReq struct {
 }
 
 type RepoManager interface {
-	// CreateRepo creates a new repository given a name and description.
-	CreateRepo(name, desc string) error
-	// PushChanges pushes changes to the repository.
-	PushChanges(name string, commit string) error
+	// SetName sets the name of the repo
+	SetName(name string)
+	// CreateRepo creates a new repository given a description.
+	CreateRepo(desc string) error
+	// PushChanges pushes changes to the repository given a commit message.
+	PushChanges(message string) error
 }
 
 type repoManager struct {
-	token    string
-	username string
+	token      string
+	username   string
+	name       string
+	apiManager http.ApiManager
 }
 
 func NewRepoManager(token, username string) RepoManager {
+	apiManager := http.NewApiManager(token)
 	return &repoManager{
-		token:    token,
-		username: username,
+		token:      token,
+		username:   username,
+		name:       "",
+		apiManager: apiManager,
 	}
 }
 
-func (r *repoManager) CreateRepo(name, desc string) error {
+func (r *repoManager) SetName(name string) {
+	r.name = name
+}
+
+func (r *repoManager) CreateRepo(desc string) error {
 	creq := &createReq{
-		Name:        name,
+		Name:        r.name,
 		Description: desc,
 		Private:     true,
 	}
@@ -45,53 +56,32 @@ func (r *repoManager) CreateRepo(name, desc string) error {
 		return err
 	}
 
-	url := "https://api.github.com/user/repos"
+	url := "/user/repos"
 
-	client := &http.Client{}
+	err = r.apiManager.Post(url, postBody, nil)
 
-	req, _ := http.NewRequest("POST", url, bytes.NewBuffer(postBody))
-
-	req.Header.Set("Authorization", fmt.Sprintf("token %s", r.token))
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Accept", "application/json")
-
-	resp, err := client.Do(req)
 	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
 
-	type request struct{}
-
-	// decore resp body into req
-	var rr request
-	err = json.NewDecoder(resp.Body).Decode(&rr)
-	if err != nil {
-		return fmt.Errorf("error decoding response: %s", err)
-	}
-
-	if resp.StatusCode != 201 {
-		return fmt.Errorf("bad response: %d", resp.StatusCode)
-	}
-
-	return r.initializeRepo(name, desc)
+	return r.initializeRepo(desc)
 }
 
-func (r *repoManager) PushChanges(name string, commit string) error {
+func (r *repoManager) PushChanges(message string) error {
 	fmt.Println("Agregando cambios...")
-	err := exec.Command("git", "-C", name, "add", ".").Run()
+	err := r.execRepoGitCommand("add", ".")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al agregar el readme")
 	}
 
 	fmt.Println("Haciendo commits de cambios...")
-	err = exec.Command("git", "-C", name, "commit", "-m", commit).Run()
+	err = r.execRepoGitCommand("commit", "-m", message)
 	if err != nil {
 		return fmt.Errorf(fmt.Sprintf("ocurrió un error al hacer commit de los cambios: %s", err))
 	}
 
 	fmt.Println("Subiendo cambios...")
-	err = exec.Command("git", "-C", name, "push", "-u", "origin", "main").Run()
+	err = r.execRepoGitCommand("push", "-u", "origin", "main")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al pushear a main")
 	}
@@ -99,10 +89,10 @@ func (r *repoManager) PushChanges(name string, commit string) error {
 	return nil
 }
 
-func (r *repoManager) initializeRepo(name, desc string) error {
+func (r *repoManager) initializeRepo(desc string) error {
 	fmt.Println("Clonando repo...")
 
-	repo := fmt.Sprintf("https://%s:x-oauth-basic@github.com/%s/%s.git", r.token, r.username, name)
+	repo := fmt.Sprintf("https://%s:x-oauth-basic@github.com/%s/%s.git", r.token, r.username, r.name)
 
 	// Clonar usando git clone repo shell
 	// git clone
@@ -113,42 +103,48 @@ func (r *repoManager) initializeRepo(name, desc string) error {
 
 	fmt.Println("Creando readme...")
 	// Create file README.md inside the repo folder
-	err = exec.Command("touch", fmt.Sprintf("./%s/README.md", name)).Run()
+	err = exec.Command("touch", fmt.Sprintf("./%s/README.md", r.name)).Run()
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al crear el readme")
 	}
 
 	fmt.Println("Inicializando repo...")
-	err = exec.Command("git", "-C", name, "init", ".").Run()
+	err = r.execRepoGitCommand("init", ".")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al incializar el repositorio")
 	}
 
 	fmt.Println("Agregando readme...")
-	err = exec.Command("git", "-C", name, "add", ".").Run()
+	err = r.execRepoGitCommand("add", ".")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al agregar el readme")
 	}
 
 	fmt.Println("Haciendo commits de cambios...")
-	err = exec.Command("git", "-C", name, "commit", "-m", "initial commit").Run()
+	err = r.execRepoGitCommand("commit", "-m", "initial commit")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al hacer commit de los cambios")
 	}
 
 	fmt.Println("Creando branch main...")
-	err = exec.Command("git", "-C", name, "branch", "-M", "main").Run()
+	err = r.execRepoGitCommand("branch", "-M", "main")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al crear branch main")
 	}
 
 	fmt.Println("Configurando origin...")
-	_ = exec.Command("git", "-C", name, "remote", "add", "origin", repo).Run()
+	_ = r.execRepoGitCommand("remote", "add", "origin", repo)
 
-	err = exec.Command("git", "-C", name, "push", "-u", "origin", "main").Run()
+	err = r.execRepoGitCommand("push", "-u", "origin", "main")
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al pushear a main")
 	}
 
 	return nil
+}
+
+// execRepoGitCommand executes a git command in the repo
+func (r *repoManager) execRepoGitCommand(args ...string) error {
+	command := append([]string{"-C", r.name}, args...)
+	return exec.Command("git", command...).Run()
 }

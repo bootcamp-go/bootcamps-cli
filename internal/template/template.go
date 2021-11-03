@@ -10,7 +10,12 @@ import (
 	"github.com/ezedh/bootcamps/pkg/color"
 )
 
+const (
+	TemplateRepo = "https://github.com/ezedh/bootcamps-templates.git"
+)
+
 type TemplateManager interface {
+	SetName(name string)
 	PlaceTemplateInRepo() error
 	ReplaceImportsInRepo() error
 	RemoveRepoFolder()
@@ -20,19 +25,24 @@ type templateManager struct {
 	name     string
 	username string
 	path     string
+	company  string
 }
 
-func NewTemplateManager(name string, username string) TemplateManager {
+func NewTemplateManager(username string, company string) TemplateManager {
 	return &templateManager{
-		name:     name,
 		username: username,
-		path:     "./" + name,
+		company:  company,
 	}
+}
+
+func (tm *templateManager) SetName(name string) {
+	tm.name = name
+	tm.path = "./" + name
 }
 
 func (tm *templateManager) PlaceTemplateInRepo() error {
 	fmt.Println("Buscando template...")
-	if err := findTemplateFolder(); err != nil {
+	if err := tm.findTemplateFolder(); err != nil {
 		color.Print("red", err.Error())
 		return err
 	}
@@ -73,14 +83,14 @@ func (tm *templateManager) RemoveRepoFolder() {
 }
 
 // findTemplateFolder finds the template folder in the current directory
-func findTemplateFolder() error {
+func (tm *templateManager) findTemplateFolder() error {
 	// check if a "template" folder exists
 	// if not, create one
 
 	if _, err := os.Stat("./template"); os.IsNotExist(err) {
-		// clone template folder from github repo https://github.com/ezedh/bootcamp-template.git
+		// clone template folder from github TemplateRepo from meli branch
 		fmt.Println("No se encontró el template, clonando desde github")
-		cmd := exec.Command("git", "clone", "https://github.com/ezedh/bootcamp-template.git", "template")
+		cmd := exec.Command("git", "clone", "--single-branch", "--branch", tm.company, TemplateRepo, "template")
 		err := cmd.Run()
 		if err != nil {
 			color.Print("red", fmt.Sprintf("Couldn't clone template folder: %s", err.Error()))

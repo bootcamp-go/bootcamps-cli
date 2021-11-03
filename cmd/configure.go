@@ -1,18 +1,3 @@
-/*
-Copyright © 2021 NAME HERE <EMAIL ADDRESS>
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-*/
 package cmd
 
 import (
@@ -30,6 +15,7 @@ var configureCmd = &cobra.Command{
 	Short: "Configurar el CLI con el token y usuario de github",
 	Long:  `Configurar el CLI con el token y usuario de github`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		// Configurar el token
 		fmt.Print("Introduzca el token de github: ")
 		var token string
 		fmt.Scanln(&token)
@@ -39,6 +25,8 @@ var configureCmd = &cobra.Command{
 			return err
 		}
 		color.Print("green", "Token actualizado")
+
+		// Configurar el usuario
 		fmt.Print("Introduzca el usuario de github: ")
 		var user string
 		fmt.Scanln(&user)
@@ -48,20 +36,81 @@ var configureCmd = &cobra.Command{
 			return err
 		}
 		color.Print("green", "Usuario actualizado")
+
+		// Configurar la empresa
+		fmt.Print("Introduzca el nombre de la empresa (meli): ")
+		var company string
+		fmt.Scanln(&company)
+		viper.Set("company", company)
+		err = viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Empresa actualizada")
+		return nil
+	},
+}
+
+var configureToken = &cobra.Command{
+	Use:   "token",
+	Short: "Configurar el CLI con el token",
+	Long:  `Configurar el CLI con el token`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Configurar el token
+		fmt.Print("Introduzca el token de github: ")
+		var token string
+		fmt.Scanln(&token)
+		viper.Set("token", token)
+		err := viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Token actualizado")
+		return nil
+	},
+}
+
+var configureUsername = &cobra.Command{
+	Use:   "username",
+	Short: "Configurar el usuario de github",
+	Long:  `Configurar el usuario de github`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Configurar el usuario
+		fmt.Print("Introduzca el usuario de github: ")
+		var user string
+		fmt.Scanln(&user)
+		viper.Set("username", user)
+		err := viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Usuario actualizado")
+		return nil
+	},
+}
+
+var configureCompany = &cobra.Command{
+	Use:   "company",
+	Short: "Configurar la empresa",
+	Long:  `Configurar la empresa`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Configurar la empresa
+		fmt.Print("Introduzca el nombre de la empresa: ")
+		var company string
+		fmt.Scanln(&company)
+		viper.Set("company", company)
+		err := viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Empresa actualizada")
 		return nil
 	},
 }
 
 func init() {
+	configureCmd.AddCommand(configureToken)
+	configureCmd.AddCommand(configureUsername)
+	configureCmd.AddCommand(configureCompany)
 	rootCmd.AddCommand(configureCmd)
-
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// configureCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// configureCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
