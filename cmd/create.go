@@ -110,5 +110,6 @@ func getCreationConfig() (string, int, error) {
 }
 
 func init() {
+	// bootcamps create
 	rootCmd.AddCommand(createCmd)
 }

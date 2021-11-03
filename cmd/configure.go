@@ -109,8 +109,12 @@ var configureCompany = &cobra.Command{
 }
 
 func init() {
+	// bootcamps configure set-token
 	configureCmd.AddCommand(configureToken)
+	// bootcamps configure set-username
 	configureCmd.AddCommand(configureUsername)
+	// bootcamps configure set-company
 	configureCmd.AddCommand(configureCompany)
+	// bootcamps configure
 	rootCmd.AddCommand(configureCmd)
 }
