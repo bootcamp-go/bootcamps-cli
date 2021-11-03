@@ -74,7 +74,9 @@ var createCmd = &cobra.Command{
 
 			color.Print("cyan", fmt.Sprintf("Crear repositorio %s", repoName))
 
-			err := repoM.CreateRepo(repoName, "")
+			repoM.SetName(repoName)
+
+			err := repoM.CreateRepo(repoName)
 			if err != nil {
 				color.Print("red", fmt.Sprintf("Error al crear el repositorio: %s", err.Error()))
 				return
@@ -96,7 +98,7 @@ var createCmd = &cobra.Command{
 				return
 			}
 
-			err = repoM.PushChanges(repoName, "add template")
+			err = repoM.PushChanges("add template")
 			if err != nil {
 				color.Print("red", fmt.Sprintf("Error al subir los cambios: %s", err.Error()))
 				return
