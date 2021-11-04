@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os/exec"
 
+	"github.com/ezedh/bootcamps/internal/config"
+	"github.com/ezedh/bootcamps/pkg/color"
 	"github.com/ezedh/bootcamps/pkg/http"
 )
 
@@ -14,13 +16,27 @@ type createReq struct {
 	Private     bool   `json:"private"`
 }
 
+type inviteReq struct {
+	Permission string `json:"permission"`
+}
+
 type RepoManager interface {
 	// SetName sets the name of the repo
 	SetName(name string)
-	// CreateRepo creates a new repository given a description.
-	CreateRepo(desc string) error
+	// Clone clones the repository with the given name in the current directory.
+	Clone(name string) error
+	// CloneFromBranch clones the repository with the given name in the current directory from the given branch.
+	CloneFromBranch(name, branch string) error
+	// Clone clones the repository with the given name in the current directory.
+	CloneDH(name string) error
+	// CloneFromBranch clones the repository with the given name in the current directory from the given branch.
+	CloneFromBranchDH(name, branch string) error
 	// PushChanges pushes changes to the repository given a commit message.
 	PushChanges(message string) error
+	// CreateRepo creates a new repository given a description.
+	CreateRepo(desc string) error
+	// InviteUsers invites the given users to the repository.
+	InviteUsers(users []string) error
 }
 
 type repoManager struct {
@@ -42,6 +58,82 @@ func NewRepoManager(token, username string) RepoManager {
 
 func (r *repoManager) SetName(name string) {
 	r.name = name
+}
+
+func (r *repoManager) Clone(name string) error {
+	fmt.Println("Clonando repo...")
+
+	repo := r.getRepoURL()
+
+	if name == "" {
+		name = r.name
+	}
+
+	return r.clone(repo, name)
+}
+
+func (r *repoManager) CloneFromBranch(name, branch string) error {
+	fmt.Println("Clonando repo...")
+
+	repo := r.getRepoURL()
+	// Clonar usando git clone repo shell
+
+	if name == "" {
+		name = r.name
+	}
+
+	return r.cloneFromBranch(repo, name, branch)
+}
+
+func (r *repoManager) CloneDH(name string) error {
+	fmt.Println("Clonando repo...")
+
+	repo, err := r.getRepoURLFromDH()
+	if err != nil {
+		return err
+	}
+
+	if name == "" {
+		name = r.name
+	}
+
+	return r.clone(repo, name)
+}
+
+func (r *repoManager) CloneFromBranchDH(name, branch string) error {
+	repo, err := r.getRepoURLFromDH()
+	if err != nil {
+		return err
+	}
+
+	// Clonar usando git clone repo shell
+	if name == "" {
+		name = r.name
+	}
+	// git clone
+	return r.cloneFromBranch(repo, name, branch)
+}
+
+func (r *repoManager) PushChanges(message string) error {
+	fmt.Println("Agregando cambios...")
+	err := r.execRepoGitCommand("add", ".")
+	if err != nil {
+		return fmt.Errorf("ocurrió un error al agregar cambios: %s", err.Error())
+	}
+
+	fmt.Println("Haciendo commits de cambios...")
+	err = r.execRepoGitCommand("commit", "-m", message)
+	if err != nil {
+		return fmt.Errorf(fmt.Sprintf("ocurrió un error al hacer commit de los cambios: %s", err))
+	}
+
+	fmt.Println("Subiendo cambios...")
+	err = r.execRepoGitCommand("push", "-u", "origin", "main")
+	if err != nil {
+		return fmt.Errorf("ocurrió un error al pushear a main")
+	}
+
+	return nil
 }
 
 func (r *repoManager) CreateRepo(desc string) error {
@@ -67,38 +159,30 @@ func (r *repoManager) CreateRepo(desc string) error {
 	return r.initializeRepo(desc)
 }
 
-func (r *repoManager) PushChanges(message string) error {
-	fmt.Println("Agregando cambios...")
-	err := r.execRepoGitCommand("add", ".")
+func (r *repoManager) InviteUsers(users []string) error {
+	var req inviteReq
+	req.Permission = "push"
+	body, err := json.Marshal(req)
 	if err != nil {
-		return fmt.Errorf("ocurrió un error al agregar el readme")
+		return err
 	}
 
-	fmt.Println("Haciendo commits de cambios...")
-	err = r.execRepoGitCommand("commit", "-m", message)
-	if err != nil {
-		return fmt.Errorf(fmt.Sprintf("ocurrió un error al hacer commit de los cambios: %s", err))
-	}
-
-	fmt.Println("Subiendo cambios...")
-	err = r.execRepoGitCommand("push", "-u", "origin", "main")
-	if err != nil {
-		return fmt.Errorf("ocurrió un error al pushear a main")
+	for _, user := range users {
+		fmt.Printf("Invitando a %s\n", user)
+		url := fmt.Sprintf("/repos/%s/%s/collaborators/%s", r.username, r.name, user)
+		err := r.apiManager.Put(url, body, nil)
+		if err != nil {
+			color.Print("red", fmt.Sprintf("Error al invitar al usuario %s", user))
+		}
 	}
 
 	return nil
 }
 
 func (r *repoManager) initializeRepo(desc string) error {
-	fmt.Println("Clonando repo...")
-
-	repo := fmt.Sprintf("https://%s:x-oauth-basic@github.com/%s/%s.git", r.token, r.username, r.name)
-
-	// Clonar usando git clone repo shell
-	// git clone
-	err := exec.Command("git", "clone", repo).Run()
+	err := r.Clone("")
 	if err != nil {
-		return fmt.Errorf("ocurrió un error al clonar el repositorio")
+		return err
 	}
 
 	fmt.Println("Creando readme...")
@@ -132,6 +216,8 @@ func (r *repoManager) initializeRepo(desc string) error {
 		return fmt.Errorf("ocurrió un error al crear branch main")
 	}
 
+	repo := r.getRepoURL()
+
 	fmt.Println("Configurando origin...")
 	_ = r.execRepoGitCommand("remote", "add", "origin", repo)
 
@@ -147,4 +233,38 @@ func (r *repoManager) initializeRepo(desc string) error {
 func (r *repoManager) execRepoGitCommand(args ...string) error {
 	command := append([]string{"-C", r.name}, args...)
 	return exec.Command("git", command...).Run()
+}
+
+func (r *repoManager) clone(repo, name string) error {
+	fmt.Println("Clonando repo...")
+	// git clone
+	err := exec.Command("git", "clone", repo, name).Run()
+	if err != nil {
+		return fmt.Errorf("ocurrió un error al clonar el repositorio")
+	}
+
+	return nil
+}
+
+func (r *repoManager) cloneFromBranch(repo, name, branch string) error {
+	fmt.Println("Clonando repo...")
+	// git clone
+	err := exec.Command("git", "clone", "--single-branch", "--branch", branch, repo, name).Run()
+	if err != nil {
+		return fmt.Errorf("ocurrió un error al clonar el repositorio")
+	}
+
+	return nil
+}
+
+func (r *repoManager) getRepoURL() string {
+	return fmt.Sprintf("https://%s:x-oauth-basic@github.com/%s/%s.git", r.token, r.username, r.name)
+}
+
+func (r *repoManager) getRepoURLFromDH() (string, error) {
+	token, err := config.GetTokenDH()
+	if err != nil {
+		return "", err
+	}
+	return fmt.Sprintf("https://%s:x-oauth-basic@github.com/ezedh/%s.git", token, r.name), nil
 }

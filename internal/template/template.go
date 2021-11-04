@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/ezedh/bootcamps/internal/repo"
 	"github.com/ezedh/bootcamps/pkg/color"
 )
 
@@ -19,6 +20,7 @@ type TemplateManager interface {
 	PlaceTemplateInRepo() error
 	ReplaceImportsInRepo() error
 	RemoveRepoFolder()
+	Clean()
 }
 
 type templateManager struct {
@@ -26,12 +28,17 @@ type templateManager struct {
 	username string
 	path     string
 	company  string
+	folder   string
+	repoM    repo.RepoManager
 }
 
-func NewTemplateManager(username string, company string) TemplateManager {
+func NewTemplateManager(username, company, uuid string, repoM repo.RepoManager) TemplateManager {
+	folder := fmt.Sprintf("%s-%s", uuid, "template")
 	return &templateManager{
 		username: username,
 		company:  company,
+		folder:   folder,
+		repoM:    repoM,
 	}
 }
 
@@ -49,8 +56,8 @@ func (tm *templateManager) PlaceTemplateInRepo() error {
 
 	// copy template folder content into repo folder
 	fmt.Println("Copiando template...")
-	cmd := fmt.Sprintf("cp -r ./template/* %s", tm.path)
-	cmdgithub := fmt.Sprintf("cp -r ./template/.github %s", tm.path)
+	cmd := fmt.Sprintf("cp -r ./%s/* %s", tm.folder, tm.path)
+	cmdgithub := fmt.Sprintf("cp -r ./%s/.github %s", tm.folder, tm.path)
 	err := exec.Command("bash", "-c", cmd).Run()
 	if err != nil {
 		color.Print("red", fmt.Sprintf("Couldn't copy template folder: %s", err.Error()))
@@ -66,6 +73,7 @@ func (tm *templateManager) PlaceTemplateInRepo() error {
 }
 
 func (tm *templateManager) ReplaceImportsInRepo() error {
+	fmt.Println("Reemplazando imports...")
 	err := filepath.Walk(tm.path, tm.visit)
 	if err != nil {
 		return err
@@ -82,20 +90,19 @@ func (tm *templateManager) RemoveRepoFolder() {
 	}
 }
 
+func (tm *templateManager) Clean() {
+	os.RemoveAll(tm.folder)
+}
+
 // findTemplateFolder finds the template folder in the current directory
 func (tm *templateManager) findTemplateFolder() error {
 	// check if a "template" folder exists
 	// if not, create one
 
-	if _, err := os.Stat("./template"); os.IsNotExist(err) {
+	if _, err := os.Stat(fmt.Sprintf("./%s", tm.folder)); os.IsNotExist(err) {
 		// clone template folder from github TemplateRepo from meli branch
-		fmt.Println("No se encontró el template, clonando desde github")
-		cmd := exec.Command("git", "clone", "--single-branch", "--branch", tm.company, TemplateRepo, "template")
-		err := cmd.Run()
-		if err != nil {
-			color.Print("red", fmt.Sprintf("Couldn't clone template folder: %s", err.Error()))
-			return err
-		}
+		tm.repoM.SetName("bootcamps-templates")
+		return tm.repoM.CloneFromBranchDH(tm.folder, tm.company)
 	}
 
 	return nil
