@@ -1,15 +1,15 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
-	"os"
-	"strings"
 
 	"github.com/ezedh/bootcamps/internal/config"
+	"github.com/ezedh/bootcamps/internal/invitation"
 	"github.com/ezedh/bootcamps/internal/repo"
 	"github.com/ezedh/bootcamps/internal/template"
 	"github.com/ezedh/bootcamps/pkg/color"
+	"github.com/ezedh/bootcamps/pkg/confirm"
+	"github.com/google/uuid"
 	"github.com/spf13/cobra"
 )
 
@@ -20,13 +20,7 @@ var createCmd = &cobra.Command{
 	Long: `Crear repositorios semilla para el bootcamp indicando la wave y la
 	cantidad de repos..`,
 	Run: func(cmd *cobra.Command, args []string) {
-		wave, ammount, err := getCreationConfig()
-		if err != nil {
-			color.Print("red", err.Error())
-			return
-		}
-
-		fmt.Printf("\n\n")
+		uuid := uuid.New().String()
 
 		c, err := config.GetConfiguration()
 		if err != nil {
@@ -35,10 +29,23 @@ var createCmd = &cobra.Command{
 		}
 
 		repoM := repo.NewRepoManager(c.Token, c.Username)
-		templateM := template.NewTemplateManager(c.Username, c.Company)
+		templateM := template.NewTemplateManager(c.Username, c.Company, uuid, repoM)
+		defer templateM.Clean()
 
-		for i := 1; i <= ammount; i++ {
-			repoName := fmt.Sprintf("%s_bootcamp_w%s-%d", c.Company, wave, i)
+		inviter := invitation.NewInviter(repoM, c.Company, uuid)
+
+		inv, err := inviter.GetCreationConfig()
+		if err != nil {
+			color.Print("red", err.Error())
+			return
+		}
+
+		if !confirm.Ask("¿Desea crear " + fmt.Sprintf("%d", inv.Amount) + " repositorios para la wave " + inviter.Wave() + " de " + inviter.Company() + "?") {
+			return
+		}
+
+		for i := 1; i <= inv.Amount; i++ {
+			repoName := fmt.Sprintf("%s_bootcamp_w%s-%d", c.Company, inviter.Wave(), i)
 
 			color.Print("cyan", fmt.Sprintf("Crear repositorio %s", repoName))
 
@@ -47,6 +54,15 @@ var createCmd = &cobra.Command{
 			err := repoM.CreateRepo(repoName)
 			if err != nil {
 				color.Print("red", fmt.Sprintf("Error al crear el repositorio: %s", err.Error()))
+				return
+			}
+
+			color.Print("cyan", "Invitar usuarios")
+			// i to string to get the correct index
+			strI := fmt.Sprintf("%d", i)
+			err = repoM.InviteUsers(inv.Groups[strI])
+			if err != nil {
+				color.Print("red", fmt.Sprintf("Error al invitar usuarios: %s", err.Error()))
 				return
 			}
 
@@ -66,6 +82,8 @@ var createCmd = &cobra.Command{
 				return
 			}
 
+			repoM.SetName(repoName)
+
 			err = repoM.PushChanges("add template")
 			if err != nil {
 				color.Print("red", fmt.Sprintf("Error al subir los cambios: %s", err.Error()))
@@ -79,34 +97,8 @@ var createCmd = &cobra.Command{
 			fmt.Printf("\n\n")
 		}
 
-		_ = os.RemoveAll("./template")
-
 		color.Print("green", "Todos los repositorios fueron creados y configurados con éxito")
 	},
-}
-
-func getCreationConfig() (string, int, error) {
-	var wave string
-	var ammount int
-
-	fmt.Printf("Wave N°: ")
-	fmt.Scan(&wave)
-
-	fmt.Printf("Cantidad de grupos: ")
-	fmt.Scan(&ammount)
-
-	fmt.Printf("\n\n")
-
-	fmt.Printf("Está a punto de crear %d repositorios para la wave %s, está de acuerdo? (y/N): ", ammount, wave)
-
-	var answer string
-	fmt.Scan(&answer)
-
-	if strings.ToLower(answer) != "y" {
-		return "", 0, errors.New("Cancelado")
-	}
-
-	return wave, ammount, nil
 }
 
 func init() {
