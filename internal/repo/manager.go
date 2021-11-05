@@ -251,9 +251,9 @@ func (r *repoManager) cloneFromBranch(repo, name, branch string) error {
 }
 
 func (r *repoManager) getRepoURL() string {
-	return fmt.Sprintf("git@github.com:%s/%s.git", r.username, r.name)
+	return fmt.Sprintf("https://x-access-token:%s@github.com/%s/%s.git", r.token, r.username, r.name)
 }
 
 func (r *repoManager) getRepoURLFromDH() string {
-	return fmt.Sprintf("git@github.com:ezedh/%s.git", r.name)
+	return fmt.Sprintf("https://x-access-token:%s@github.com/ezedh/%s.git", r.token, r.name)
 }
