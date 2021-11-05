@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"os/exec"
 
-	"github.com/ezedh/bootcamps/internal/config"
 	"github.com/ezedh/bootcamps/pkg/color"
 	"github.com/ezedh/bootcamps/pkg/http"
 )
@@ -88,10 +87,7 @@ func (r *repoManager) CloneFromBranch(name, branch string) error {
 func (r *repoManager) CloneDH(name string) error {
 	fmt.Println("Clonando repo...")
 
-	repo, err := r.getRepoURLFromDH()
-	if err != nil {
-		return err
-	}
+	repo := r.getRepoURLFromDH()
 
 	if name == "" {
 		name = r.name
@@ -101,10 +97,7 @@ func (r *repoManager) CloneDH(name string) error {
 }
 
 func (r *repoManager) CloneFromBranchDH(name, branch string) error {
-	repo, err := r.getRepoURLFromDH()
-	if err != nil {
-		return err
-	}
+	repo := r.getRepoURLFromDH()
 
 	// Clonar usando git clone repo shell
 	if name == "" {
@@ -261,10 +254,6 @@ func (r *repoManager) getRepoURL() string {
 	return fmt.Sprintf("https://%s:x-oauth-basic@github.com/%s/%s.git", r.token, r.username, r.name)
 }
 
-func (r *repoManager) getRepoURLFromDH() (string, error) {
-	token, err := config.GetTokenDH()
-	if err != nil {
-		return "", err
-	}
-	return fmt.Sprintf("https://%s:x-oauth-basic@github.com/ezedh/%s.git", token, r.name), nil
+func (r *repoManager) getRepoURLFromDH() string {
+	return fmt.Sprintf("https://%s:x-oauth-basics@github.com/ezedh/%s.git", r.token, r.name)
 }

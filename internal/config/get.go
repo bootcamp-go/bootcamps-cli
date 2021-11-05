@@ -8,7 +8,6 @@ import (
 
 // Errors
 var (
-	ErrNoTokenDH = errors.New("no se encontró el token de DH")
 	ErrNoToken   = errors.New("no se encontró el token")
 	ErrNoUser    = errors.New("no se encontró el usuario")
 	ErrNoCompany = errors.New("no se encontró la empresa")
@@ -41,13 +40,4 @@ func GetConfiguration() (*Configuration, error) {
 		Token:    token,
 		Company:  company,
 	}, nil
-}
-
-func GetTokenDH() (string, error) {
-	token := viper.GetString("tokendh")
-	if token == "" {
-		return "", ErrNoTokenDH
-	}
-
-	return token, nil
 }

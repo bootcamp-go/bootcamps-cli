@@ -14,7 +14,6 @@ go get github.com/ezedh/bootcamps
 
 To configure the CLI you will require these variables:
 
-- token DH: Token provided by administrator.
 - token: Personal Github Api Token.
 - username: Github username.
 - company: Company of the current bootcamp.
@@ -26,12 +25,6 @@ bootcamps configure
 ```
 
 This will ask you for each variable in order.
-
-#### Set DH token
-
-```sh
-bootcamps configure dh
-```
 
 #### Set token
 
