@@ -95,3 +95,31 @@ groups:
 ```
 
 The configuration above (for 4 groups) will create 4 repositories.
+
+## Get Sprint Repos
+
+To get a sprint repo you will use the wave, the group and the sprint using flags:
+
+```sh
+bootcamps get -w 10 -g 1 -s 1
+```
+
+Also works:
+
+```sh
+bootcamps get --wave 10 --group 1 --sprint 1
+```
+
+## Test Sprint
+
+To test a sprint you will use the wave, the group and the sprint using flags:
+
+```sh
+bootcamps test -w 10 -g 1 -s 1
+```
+
+Also works:
+
+```sh
+bootcamps test --wave 10 --group 1 --sprint 1
+```
