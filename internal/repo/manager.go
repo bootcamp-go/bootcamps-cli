@@ -254,5 +254,5 @@ func (r *repoManager) getRepoURL() string {
 }
 
 func (r *repoManager) getRepoURLFromDH() string {
-	return fmt.Sprintf("https://x-access-token:%s@github.com/ezedh/%s.git", r.token, r.name)
+	return fmt.Sprintf("https://x-access-token:%s@github.com/bootcamp-go/%s.git", r.token, r.name)
 }
