@@ -34,6 +34,10 @@ func (t *tester) Test(wave string, sprint string) error {
 		return err
 	}
 
+	defer func() {
+		exec.Command("rm", "-rf", t.folder).Run()
+	}()
+
 	fmt.Println("Restaurando base de datos")
 
 	var sqlPassword string

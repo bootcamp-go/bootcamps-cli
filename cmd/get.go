@@ -31,6 +31,10 @@ var getCmd = &cobra.Command{
 		repoName := fmt.Sprintf(config.GoRepoNameFormat, c.Company, wave, group)
 		repoM := repo.NewRepoManager(c.Token, c.Username)
 
+		defer func() {
+			exec.Command("rm", "-rf", repoName).Run()
+		}()
+
 		sprintTag := fmt.Sprintf("sprint_%s.0.0", sprint)
 
 		err = exec.Command("rm", "-rf", repoName).Run()
