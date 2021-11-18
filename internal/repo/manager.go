@@ -173,14 +173,14 @@ func (r *repoManager) InviteUsers(users []string) error {
 }
 
 func (r *repoManager) initializeRepo(desc string) error {
-	err := r.Clone("")
+	err := r.Clone(fmt.Sprintf("/tmp/%s", r.name))
 	if err != nil {
 		return err
 	}
 
 	fmt.Println("Creando readme...")
 	// Create file README.md inside the repo folder
-	err = exec.Command("touch", fmt.Sprintf("./%s/README.md", r.name)).Run()
+	err = exec.Command("touch", fmt.Sprintf("/tmp/%s/README.md", r.name)).Run()
 	if err != nil {
 		return fmt.Errorf("ocurrió un error al crear el readme")
 	}
@@ -224,7 +224,7 @@ func (r *repoManager) initializeRepo(desc string) error {
 
 // execRepoGitCommand executes a git command in the repo
 func (r *repoManager) execRepoGitCommand(args ...string) error {
-	command := append([]string{"-C", r.name}, args...)
+	command := append([]string{"-C", fmt.Sprintf("/tmp/%s", r.name)}, args...)
 	return exec.Command("git", command...).Run()
 }
 
@@ -240,11 +240,10 @@ func (r *repoManager) clone(repo, name string) error {
 }
 
 func (r *repoManager) cloneFromBranch(repo, name, branch string) error {
-	fmt.Println("Clonando repo...")
 	// git clone
 	err := exec.Command("git", "clone", "--single-branch", "--branch", branch, repo, name).Run()
 	if err != nil {
-		return fmt.Errorf("ocurrió un error al clonar el repositorio")
+		return fmt.Errorf("ocurrió un error al clonar el repositorio, %s", err.Error())
 	}
 
 	return nil

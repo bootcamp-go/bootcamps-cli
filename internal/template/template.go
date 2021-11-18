@@ -33,7 +33,7 @@ type templateManager struct {
 }
 
 func NewTemplateManager(username, company, uuid string, repoM repo.RepoManager) TemplateManager {
-	folder := fmt.Sprintf("%s-%s", uuid, "template")
+	folder := fmt.Sprintf("/tmp/%s-%s", uuid, "template")
 	return &templateManager{
 		username: username,
 		company:  company,
@@ -44,7 +44,7 @@ func NewTemplateManager(username, company, uuid string, repoM repo.RepoManager) 
 
 func (tm *templateManager) SetName(name string) {
 	tm.name = name
-	tm.path = "./" + name
+	tm.path = "/tmp/" + name
 }
 
 func (tm *templateManager) PlaceTemplateInRepo() error {
@@ -56,8 +56,8 @@ func (tm *templateManager) PlaceTemplateInRepo() error {
 
 	// copy template folder content into repo folder
 	fmt.Println("Copiando template...")
-	cmd := fmt.Sprintf("cp -r ./%s/* %s", tm.folder, tm.path)
-	cmdgithub := fmt.Sprintf("cp -r ./%s/.github %s", tm.folder, tm.path)
+	cmd := fmt.Sprintf("cp -r %s/* %s", tm.folder, tm.path)
+	cmdgithub := fmt.Sprintf("cp -r %s/.github %s", tm.folder, tm.path)
 	err := exec.Command("bash", "-c", cmd).Run()
 	if err != nil {
 		color.Print("red", fmt.Sprintf("Couldn't copy template folder: %s", err.Error()))
@@ -99,7 +99,7 @@ func (tm *templateManager) findTemplateFolder() error {
 	// check if a "template" folder exists
 	// if not, create one
 
-	if _, err := os.Stat(fmt.Sprintf("./%s", tm.folder)); os.IsNotExist(err) {
+	if _, err := os.Stat(tm.folder); os.IsNotExist(err) {
 		// clone template folder from github TemplateRepo from meli branch
 		tm.repoM.SetName("bootcamps-templates")
 		return tm.repoM.CloneFromBranchDH(tm.folder, tm.company)

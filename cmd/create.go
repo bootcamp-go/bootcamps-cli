@@ -45,7 +45,9 @@ var createCmd = &cobra.Command{
 		}
 
 		for i := 1; i <= inv.Amount; i++ {
-			repoName := fmt.Sprintf("%s_bootcamp_w%s-%d", c.Company, inviter.Wave(), i)
+			// index to string
+			index := fmt.Sprintf("%d", i)
+			repoName := fmt.Sprintf(config.GoRepoNameFormat, c.Company, inviter.Wave(), index)
 
 			color.Print("cyan", fmt.Sprintf("Crear repositorio %s", repoName))
 

@@ -13,6 +13,10 @@ var (
 	ErrNoCompany = errors.New("no se encontró la empresa")
 )
 
+var (
+	GoRepoNameFormat = "%s_bootcamp_go_w%s-%s"
+)
+
 type Configuration struct {
 	Username string
 	Token    string

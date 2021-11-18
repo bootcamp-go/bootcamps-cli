@@ -36,7 +36,7 @@ func NewInviter(repoM repo.RepoManager, company, uuid string) Inviter {
 	fmt.Printf("Wave N°: ")
 	fmt.Scan(&wave)
 
-	folder := fmt.Sprintf("%s-users", uuid)
+	folder := fmt.Sprintf("/tmp/%s-users", uuid)
 
 	return &inviter{
 		wave:    wave,
@@ -77,13 +77,13 @@ func (i *inviter) GetCreationConfig() (*Invitations, error) {
 }
 
 func (i *inviter) waveConfigFileExists() bool {
-	_, err := os.Stat(fmt.Sprintf("./%s/%s", i.folder, "wave-"+i.wave+".yaml"))
+	_, err := os.Stat(fmt.Sprintf("%s/%s", i.folder, "wave-"+i.wave+".yaml"))
 
 	return !os.IsNotExist(err)
 }
 
 func (i *inviter) getInvitationsConfig() (*InvitationsConfig, error) {
-	yamlData, err := os.ReadFile(fmt.Sprintf("./%s/%s", i.folder, "wave-"+i.wave+".yaml"))
+	yamlData, err := os.ReadFile(fmt.Sprintf("%s/%s", i.folder, "wave-"+i.wave+".yaml"))
 	if err != nil {
 		return nil, err
 	}
