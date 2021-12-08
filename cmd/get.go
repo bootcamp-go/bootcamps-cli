@@ -14,11 +14,12 @@ var (
 	wave   string
 	group  string
 	sprint string
+	owner  string
 )
 
 // getCmd represents the get command
 var getCmd = &cobra.Command{
-	Use:   "get -w [WAVE] -g [GROUP] -s [SPRINT]",
+	Use:   "get -w [WAVE] -g [GROUP] -s [SPRINT] -o [REPO OWNER]",
 	Short: "Get the sprint repository",
 	Long:  `Get the sprint repository of a group of a wabe`,
 	Run: func(cmd *cobra.Command, args []string) {
@@ -29,7 +30,7 @@ var getCmd = &cobra.Command{
 		}
 
 		repoName := fmt.Sprintf(config.GoRepoNameFormat, c.Company, wave, group)
-		repoM := repo.NewRepoManager(c.Token, c.Username)
+		repoM := repo.NewRepoManager(c.Token, owner)
 
 		defer func() {
 			exec.Command("rm", "-rf", repoName).Run()
@@ -58,8 +59,10 @@ func init() {
 	getCmd.Flags().StringVarP(&wave, "wave", "w", "", "Wave of the sprint")
 	getCmd.Flags().StringVarP(&group, "group", "g", "", "Group of the sprint")
 	getCmd.Flags().StringVarP(&sprint, "sprint", "s", "", "Sprint of the sprint")
+	getCmd.Flags().StringVarP(&owner, "owner", "o", "", "Owner of the sprint's repo")
 
 	getCmd.MarkFlagRequired("wave")
 	getCmd.MarkFlagRequired("group")
 	getCmd.MarkFlagRequired("sprint")
+	getCmd.MarkFlagRequired("owner")
 }

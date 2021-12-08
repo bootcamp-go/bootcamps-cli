@@ -98,28 +98,28 @@ The configuration above (for 4 groups) will create 4 repositories.
 
 ## Get Sprint Repos
 
-To get a sprint repo you will use the wave, the group and the sprint using flags:
+To get a sprint repo you will use the wave, the group, the sprint and the owner of the repo using flags:
 
 ```sh
-bootcamps get -w 10 -g 1 -s 1
+bootcamps get -w 10 -g 1 -s 1 -o ezedh
 ```
 
 Also works:
 
 ```sh
-bootcamps get --wave 10 --group 1 --sprint 1
+bootcamps get --wave 10 --group 1 --sprint 1 -o ezedh
 ```
 
 ## Test Sprint
 
-To test a sprint you will use the wave, the group and the sprint using flags:
+To test a sprint you will use the wave, the group, the sprint and the owner of the repo using flags:
 
 ```sh
-bootcamps test -w 10 -g 1 -s 1
+bootcamps test -w 10 -g 1 -s 1 -o ezedh
 ```
 
 Also works:
 
 ```sh
-bootcamps test --wave 10 --group 1 --sprint 1
+bootcamps test --wave 10 --group 1 --sprint 1 --owner ezedh
 ```

@@ -30,7 +30,7 @@ to quickly create a Cobra application.`,
 		}
 
 		repoName := fmt.Sprintf(config.GoRepoNameFormat, c.Company, wave, group)
-		repoM := repo.NewRepoManager(c.Token, c.Username)
+		repoM := repo.NewRepoManager(c.Token, owner)
 
 		sprintTag := fmt.Sprintf("sprint_%s.0.0", sprint)
 		repoFolder := fmt.Sprintf("/tmp/%s", repoName)
@@ -64,8 +64,10 @@ func init() {
 	testCmd.Flags().StringVarP(&wave, "wave", "w", "", "Wave of the sprint")
 	testCmd.Flags().StringVarP(&group, "group", "g", "", "Group of the sprint")
 	testCmd.Flags().StringVarP(&sprint, "sprint", "s", "", "Sprint of the sprint")
+	getCmd.Flags().StringVarP(&owner, "owner", "o", "", "Owner of the sprint's repo")
 
 	testCmd.MarkFlagRequired("wave")
 	testCmd.MarkFlagRequired("group")
 	testCmd.MarkFlagRequired("sprint")
+	testCmd.MarkFlagRequired("owner")
 }
