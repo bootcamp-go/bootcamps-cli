@@ -107,7 +107,7 @@ bootcamps get -w 10 -g 1 -s 1 -o ezedh
 Also works:
 
 ```sh
-bootcamps get --wave 10 --group 1 --sprint 1 -o ezedh
+bootcamps get --wave 10 --group 1 --sprint 1 --owner ezedh
 ```
 
 ## Test Sprint
