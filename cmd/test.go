@@ -64,7 +64,7 @@ func init() {
 	testCmd.Flags().StringVarP(&wave, "wave", "w", "", "Wave of the sprint")
 	testCmd.Flags().StringVarP(&group, "group", "g", "", "Group of the sprint")
 	testCmd.Flags().StringVarP(&sprint, "sprint", "s", "", "Sprint of the sprint")
-	getCmd.Flags().StringVarP(&owner, "owner", "o", "", "Owner of the sprint's repo")
+	testCmd.Flags().StringVarP(&owner, "owner", "o", "", "Owner of the sprint's repo")
 
 	testCmd.MarkFlagRequired("wave")
 	testCmd.MarkFlagRequired("group")
