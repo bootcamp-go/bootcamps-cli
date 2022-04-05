@@ -3,7 +3,6 @@ package secrets
 import (
 	"context"
 	"errors"
-	"fmt"
 	"os/exec"
 	"strings"
 
@@ -30,7 +29,6 @@ func NewSecretsManager(client *github.Client, owner, repo string) SecretManager 
 
 func (s *secretsManager) SetSecret(ctx context.Context, key, value string) error {
 	ev, pkid, err := s.encryptValue(ctx, value)
-	fmt.Println("Encrypted value:", ev)
 	if err != nil {
 		return err
 	}
@@ -48,8 +46,6 @@ func (s *secretsManager) encryptValue(ctx context.Context, value string) (string
 	if err != nil {
 		return "", "", err
 	}
-
-	fmt.Println("Encrypted value:", string(data))
 
 	return string(data), pkid, nil
 }
