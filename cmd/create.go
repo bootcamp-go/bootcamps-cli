@@ -52,7 +52,7 @@ var createCmd = &cobra.Command{
 			// index to string
 			index := fmt.Sprintf("%d", i)
 			repoName := fmt.Sprintf(config.GoRepoNameFormat, c.Company, inviter.Wave(), index)
-			secretsM := secrets.NewSecretsManager(ghclient, c.Token, repoName)
+			secretsM := secrets.NewSecretsManager(ghclient, c.Username, repoName)
 			color.Print("cyan", fmt.Sprintf("Crear repositorio %s", repoName))
 
 			repoM.SetName(repoName)
