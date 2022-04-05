@@ -21,6 +21,8 @@ type Configuration struct {
 	Username string
 	Token    string
 	Company  string
+	ApiUrl   string
+	ApiKey   string
 }
 
 func GetConfiguration() (*Configuration, error) {
@@ -39,9 +41,15 @@ func GetConfiguration() (*Configuration, error) {
 		return nil, ErrNoCompany
 	}
 
+	apiUrl := viper.GetString("api_url")
+
+	apiKey := viper.GetString("api_key")
+
 	return &Configuration{
 		Username: username,
 		Token:    token,
 		Company:  company,
+		ApiUrl:   apiUrl,
+		ApiKey:   apiKey,
 	}, nil
 }

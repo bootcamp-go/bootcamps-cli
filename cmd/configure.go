@@ -108,6 +108,44 @@ var configureCompany = &cobra.Command{
 	},
 }
 
+var configureApiUrl = &cobra.Command{
+	Use:   "apiurl",
+	Short: "Configurar url de api",
+	Long:  `Configurar url de api`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Configurar la empresa
+		fmt.Print("Introduzca el nombre de la url: ")
+		var company string
+		fmt.Scanln(&company)
+		viper.Set("api_url", company)
+		err := viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Url actualizada")
+		return nil
+	},
+}
+
+var configureApiKey = &cobra.Command{
+	Use:   "apikey",
+	Short: "Configurar key de api",
+	Long:  `Configurar key de api`,
+	RunE: func(cmd *cobra.Command, args []string) error {
+		// Configurar la empresa
+		fmt.Print("Introduzca la key: ")
+		var company string
+		fmt.Scanln(&company)
+		viper.Set("api_key", company)
+		err := viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Key actualizada")
+		return nil
+	},
+}
+
 func init() {
 	// bootcamps configure
 	rootCmd.AddCommand(configureCmd)
@@ -117,4 +155,8 @@ func init() {
 	configureCmd.AddCommand(configureUsername)
 	// bootcamps configure company
 	configureCmd.AddCommand(configureCompany)
+
+	configureCmd.AddCommand(configureApiUrl)
+
+	configureCmd.AddCommand(configureApiKey)
 }
