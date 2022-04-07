@@ -5,7 +5,7 @@
 To install the CLI just:
 
 ```sh
-go get github.com/ezedh/bootcamps
+go install github.com/ezedh/bootcamps@latest
 ```
 
 ## Usage
