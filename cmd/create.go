@@ -106,7 +106,7 @@ var createCmd = &cobra.Command{
 				color.Print("red", fmt.Sprintf("Error al crear el secret API_URL: %s", err.Error()))
 				return
 			}
-			err = secretsM.SetSecret(context.Background(), "API_KEY", c.ApiUrl)
+			err = secretsM.SetSecret(context.Background(), "API_KEY", c.ApiKey)
 			if err != nil {
 				color.Print("red", fmt.Sprintf("Error al crear el secret API_KEY: %s", err.Error()))
 				return
