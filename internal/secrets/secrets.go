@@ -3,9 +3,11 @@ package secrets
 import (
 	"context"
 	"errors"
+	"fmt"
 	"os/exec"
 	"strings"
 
+	"github.com/ezedh/bootcamps/pkg/color"
 	"github.com/google/go-github/v43/github"
 )
 
@@ -42,7 +44,7 @@ func (s *secretsManager) encryptValue(ctx context.Context, value string) (string
 		return "", "", err
 	}
 
-	data, err := exec.Command("node", "../../script.js", pk, value).Output()
+	data, err := exec.Command("node", "./script.js", pk, value).Output()
 	if err != nil {
 		return "", "", err
 	}
@@ -56,6 +58,8 @@ func (s *secretsManager) sendSecretRequest(ctx context.Context, pkid, name, valu
 		EncryptedValue: strings.Trim(value, "\n"),
 		KeyID:          pkid,
 	}
+
+	color.Print("cyan", fmt.Sprintf("Sending %s secret request to GitHub...", name))
 
 	res, err := s.c.Actions.CreateOrUpdateRepoSecret(ctx, s.owner, s.repo, es)
 	if err != nil {
