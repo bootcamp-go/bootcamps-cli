@@ -17,6 +17,8 @@ To configure the CLI you will require these variables:
 - token: Personal Github Api Token.
 - username: Github username.
 - company: Company of the current bootcamp.
+- api_url: The tracking tool api url
+- api_key: The API Key of the tracking tool api
 
 #### Basic usage
 

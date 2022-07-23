@@ -47,6 +47,27 @@ var configureCmd = &cobra.Command{
 			return err
 		}
 		color.Print("green", "Empresa actualizada")
+
+		fmt.Print("Introduzca el nombre de la api url de tracking: ")
+		var url string
+		fmt.Scanln(&url)
+		viper.Set("api_url", url)
+		err = viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Url actualizada")
+
+		fmt.Print("Introduzca la key de tracking: ")
+		var key string
+		fmt.Scanln(&key)
+		viper.Set("api_key", key)
+		err = viper.WriteConfig()
+		if err != nil {
+			return err
+		}
+		color.Print("green", "Key actualizada")
+
 		return nil
 	},
 }
@@ -115,9 +136,9 @@ var configureApiUrl = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Configurar la empresa
 		fmt.Print("Introduzca el nombre de la url: ")
-		var company string
-		fmt.Scanln(&company)
-		viper.Set("api_url", company)
+		var url string
+		fmt.Scanln(&url)
+		viper.Set("api_url", url)
 		err := viper.WriteConfig()
 		if err != nil {
 			return err
@@ -134,9 +155,9 @@ var configureApiKey = &cobra.Command{
 	RunE: func(cmd *cobra.Command, args []string) error {
 		// Configurar la empresa
 		fmt.Print("Introduzca la key: ")
-		var company string
-		fmt.Scanln(&company)
-		viper.Set("api_key", company)
+		var key string
+		fmt.Scanln(&key)
+		viper.Set("api_key", key)
 		err := viper.WriteConfig()
 		if err != nil {
 			return err
