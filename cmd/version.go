@@ -12,7 +12,7 @@ var versionCMD = &cobra.Command{
 	Long:  `Get the tool version`,
 	Run: func(cmd *cobra.Command, args []string) {
 		// get the version installed in the system and print it
-		fmt.Println("Version: v1.4.0")
+		fmt.Println("Version: v1.5.0")
 	},
 }
 

@@ -10,6 +10,8 @@ require (
 )
 
 require (
+	github.com/GoKillers/libsodium-go v0.0.0-20171022220152-dd733721c3cb // indirect
+	github.com/gokillers/libsodium-go v0.0.0-20171022220152-dd733721c3cb // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/stretchr/testify v1.7.1 // indirect
